@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Resource Pool</h2>
+<p>Browse and borrow available computing resources from other users.</p>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search resources...">
+            <button class="btn btn-outline-secondary" type="button" id="searchButton">Search</button>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <select class="form-select w-auto" id="resourceTypeFilter">
+                <option value="">All Types</option>
+                <option value="CPU">CPU</option>
+                <option value="GPU">GPU</option>
+                <option value="RAM">RAM</option>
+                <option value="Storage">Storage</option>
+                <option value="Network">Network</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="resourcesContainer">
+    {% if resources %}
+        {% for resource in resources %}
+        <div class="col-md-4 mb-4 resource-card" data-type="{{ resource.type }}">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">{{ resource.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Type:</strong> {{ resource.type }}</p>
+                    <p><strong>Capacity:</strong> {{ resource.capacity }}</p>
+                    <p><strong>Cost:</strong> {{ resource.credits_per_hour }} credits/hour</p>
+                    <p><strong>Provider:</strong> {{ resource.owner.username }}</p>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#borrowModal{{ resource.id }}">
+                        Borrow Resource
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Borrow Modal -->
+        <div class="modal fade" id="borrowModal{{ resource.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Borrow Resource: {{ resource.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{{ url_for('borrow_resource', resource_id=resource.id) }}">
+                            <div class="mb-3">
+                                <label for="hours" class="form-label">Hours to Borrow</label>
+                                <input type="number" min="1" max="24" value="1" class="form-control" id="hours" name="hours" required>
+                            </div>
+                            <div class="alert alert-info">
+                                <p><strong>Resource Details:</strong></p>
+                                <p>Type: {{ resource.type }}</p>
+                                <p>Capacity: {{ resource.capacity }}</p>
+                                <p>Cost: {{ resource.credits_per_hour }} credits/hour</p>
+                                <p>Provider: {{ resource.owner.username }}</p>
+                                <hr>
+                                <p class="mb-0">Your current credits: {{ current_user.credits }}</p>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Confirm Borrow</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No resources are currently available in the pool.
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

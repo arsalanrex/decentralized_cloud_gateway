@@ -1,0 +1,58 @@
+/* Main Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+}
+
+/* Dashboard */
+.resource-status {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 0.25rem;
+    text-align: center;
+}
+
+.status-available {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-in-use {
+    background-color: #ffc107;
+    color: black;
+}
+
+.status-offline {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Resource Pool */
+.resource-card {
+    transition: transform 0.2s;
+}
+
+.resource-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Resource Details */
+.resource-details {
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Transaction History */
+.transaction-badge {
+    font-size: 0.8em;
+}

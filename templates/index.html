@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <h1 class="display-4">Decentralized Cloud Resource Gateway</h1>
+    <p class="lead">Share your unused computing resources and borrow when you need more power.</p>
+    <hr class="my-4">
+    <p>Our decentralized platform allows users to lend their unused computing resources to a shared pool in exchange for credits that can be used to access similar resources when needed.</p>
+    {% if not current_user.is_authenticated %}
+    <div class="mt-4">
+        <a class="btn btn-primary btn-lg me-2" href="{{ url_for('register') }}">Register</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('login') }}">Login</a>
+    </div>
+    {% else %}
+    <div class="mt-4">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Share Resources</h5>
+                <p class="card-text">Contribute your idle computing power, storage, or other resources to earn credits.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Use Resources</h5>
+                <p class="card-text">Spend credits to access computing resources from the decentralized pool when you need them.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Decentralized System</h5>
+                <p class="card-text">Our algorithms ensure fair, secure, and dynamic resource allocation across the network.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

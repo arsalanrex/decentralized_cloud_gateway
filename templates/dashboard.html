@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">My Credits</h5>
+            </div>
+            <div class="card-body">
+                <h3>{{ current_user.credits }} Credits</h3>
+                <p>Use credits to borrow computing resources from the pool.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">My Resources</h5>
+            </div>
+            <div class="card-body">
+                <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addResourceModal">
+                    Add New Resource
+                </button>
+
+                {% if my_resources %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
+                                <th>Credits/Hour</th>
+                                <th>Status</th>
+                                <th>Borrowed By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resource in my_resources %}
+                            <tr>
+                                <td>{{ resource.name }}</td>
+                                <td>{{ resource.type }}</td>
+                                <td>{{ resource.capacity }}</td>
+                                <td>{{ resource.credits_per_hour }}</td>
+                                <td>
+                                    <span class="badge {% if resource.status == 'available' %}bg-success{% elif resource.status == 'in_use' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ resource.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if resource.borrowed_by %}
+                                        User #{{ resource.borrowed_by }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>You haven't added any resources yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Borrowed Resources</h5>
+            </div>
+            <div class="card-body">
+                {% if borrowed_resources %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
+                                <th>Credits/Hour</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resource in borrowed_resources %}
+                            <tr>
+                                <td>{{ resource.name }}</td>
+                                <td>{{ resource.type }}</td>
+                                <td>{{ resource.capacity }}</td>
+                                <td>{{ resource.credits_per_hour }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('return_resource', resource_id=resource.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-warning">Return</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p>You are not currently borrowing any resources.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Transaction History</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="transactionTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="consumed-tab" data-bs-toggle="tab" data-bs-target="#consumed" type="button" role="tab">Resources I Used</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="provided-tab" data-bs-toggle="tab" data-bs-target="#provided" type="button" role="tab">Resources I Provided</button>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="transactionTabsContent">
+                    <div class="tab-pane fade show active" id="consumed" role="tabpanel">
+                        {% if my_transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Resource</th>
+                                        <th>Provider</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Credits</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in my_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.resource.name }}</td>
+                                        <td>{{ transaction.provider.username }}</td>
+                                        <td>{{ transaction.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            {% if transaction.end_time %}
+                                                {{ transaction.end_time.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ transaction.credits }}</td>
+                                        <td>
+                                            <span class="badge {% if transaction.status == 'active' %}bg-primary{% elif transaction.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ transaction.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>You haven't consumed any resources yet.</p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane fade" id="provided" role="tabpanel">
+                        {% if provided_transactions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Resource</th>
+                                        <th>Consumer</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Credits</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in provided_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.resource.name }}</td>
+                                        <td>{{ transaction.consumer.username }}</td>
+                                        <td>{{ transaction.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            {% if transaction.end_time %}
+                                                {{ transaction.end_time.strftime('%Y-%m-%d %H:%M') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ transaction.credits }}</td>
+                                        <td>
+                                            <span class="badge {% if transaction.status == 'active' %}bg-primary{% elif transaction.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ transaction.status }}
+                                                </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>You haven't provided any resources yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Resource Modal -->
+<div class="modal fade" id="addResourceModal" tabindex="-1" aria-labelledby="addResourceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addResourceModalLabel">Add New Resource</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_resource') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Resource Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Resource Type</label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="CPU">CPU</option>
+                            <option value="GPU">GPU</option>
+                            <option value="RAM">RAM</option>
+                            <option value="Storage">Storage</option>
+                            <option value="Network">Network</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">Capacity</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="capacity" name="capacity" required>
+                        <div class="form-text">Units depend on resource type (cores for CPU, GB for RAM/Storage, etc.)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="credits_per_hour" class="form-label">Credits Per Hour</label>
+                        <input type="number" step="0.1" min="0" class="form-control" id="credits_per_hour" name="credits_per_hour" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Resource</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
